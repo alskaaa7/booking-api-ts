@@ -18,7 +18,7 @@ app.get('/api/bookings/health', (req, res) => {
   res.json({ status: 'OK', message: 'Booking service is healthy' });
 });
 
-// ЗАПУСК СЕРВЕРА (этого не было!)
+// Запуск сервера
 app.listen(PORT, () => {
   console.log(`🚀 Server started on http://localhost:${PORT}`);
   console.log(`✅ Health check: http://localhost:${PORT}/health`);

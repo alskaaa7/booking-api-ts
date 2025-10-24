@@ -23,7 +23,7 @@ WORKDIR /app
 # Копируем package files
 COPY package*.json ./
 
-# Устанавливаем ТОЛЬКО production зависимости
+# Устанавливаем production зависимости
 RUN npm ci --only=production
 
 # Копируем собранное приложение из builder stage

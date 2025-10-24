@@ -1,4 +1,4 @@
-// Мокаем ВСЕ зависимости НА ВЕРХНЕМ УРОВНЕ
+// Мокаем все зависимости на верхнем уровне
 jest.mock('../../../src/config/database', () => ({
   pool: {
     query: jest.fn(() => Promise.resolve({ rows: [] })),
@@ -31,7 +31,7 @@ const mockCacheService = cacheService as jest.Mocked<typeof cacheService>;
 describe('BookingService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Правильные моки по умолчанию
+    // Моки по умолчанию
     (mockPool.query as jest.Mock).mockResolvedValue({ rows: [] });
     mockCacheService.hasUserBooking.mockResolvedValue(false);
     mockCacheService.acquireLock.mockResolvedValue(true);

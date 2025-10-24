@@ -1,5 +1,5 @@
 describe('BookingController', () => {
-  // Мокаем ВСЕ
+  // Мокаем все
   jest.mock('../../../src/services/bookingService', () => ({
     bookingService: {
       reserveBooking: jest.fn(() => Promise.resolve({ success: true, booking: {} })),
@@ -31,14 +31,13 @@ describe('BookingController', () => {
     jest.clearAllMocks();
   });
 
-  // ТОЛЬКО ТЕСТЫ КОТОРЫЕ ТОЧНО РАБОТАЮТ
   describe('reserveBooking', () => {
     it('should call service and return response', async () => {
       mockRequest.body = { event_id: 1, user_id: 'user123' };
       
       await bookingController.reserveBooking(mockRequest, mockResponse, mockNext);
 
-      // Просто проверяем что методы вызваны
+      // Проверяем что методы вызваны
       expect(mockResponse.status).toHaveBeenCalled();
       expect(mockResponse.json).toHaveBeenCalled();
     });

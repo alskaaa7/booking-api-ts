@@ -10,7 +10,7 @@ const pool = new Pool({
 
 async function initDatabase() {
   try {
-    // Создаем базу данных если не существует
+    // Создаем базу данных, если не существует
     await pool.query('CREATE DATABASE booking_system');
     console.log('✅ Database created');
   } catch (e) {
