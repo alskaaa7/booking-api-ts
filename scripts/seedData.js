@@ -1,4 +1,4 @@
-const { pool } = require('../dist/config/database'); // или '../src/config/database'
+const { pool } = require('../dist/config/database'); 
 
 async function seedData() {
   const client = await pool.connect();
