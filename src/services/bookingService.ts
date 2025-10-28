@@ -3,6 +3,17 @@ import { cacheService } from './cacheService';
 import { Booking, ReserveBookingRequest, ReserveBookingResponse } from '../models/booking';
 import { EventWithBookings } from '../models/event';
 
+export interface UserRanking { // рейтинг пользователей
+    user_id: string;
+    place: number;
+    booking_count: number;
+}
+
+export interface RankingPeriod {
+    type: 'day' | 'week' | 'month';
+    date?: Date;
+}
+
 export class BookingService {
   async reserveBooking(request: ReserveBookingRequest): Promise<ReserveBookingResponse> {
     const { event_id, user_id } = request;
@@ -123,6 +134,66 @@ export class BookingService {
       client.release();
     }
   }
-}
+async getUserRankings(period?: RankingPeriod): Promise<UserRanking[]> {
+    try {
+        let dateFilter = ''; // для хранения условия WHERE
+        const params: any[] = []; // массив для параметров sql-запроса
+
+        if (period && period.date) {
+            const date = period.date; // проверка наличия даты в периоде
+
+            switch (period.type) {
+                case 'day':
+                    dateFilter = `WHERE DATE(b.created_at) = $1`;
+                    params.push(date.toISOString().split('T')[0]);
+
+                    break;
+
+                case 'week':
+                    dateFilter = `WHERE b.created_at >= $1 AND b.created_at <= $2`; // диапазон дат
+                    const weekStart = new Date(date);
+                    weekStart.setDate(date.getDate() - date.getDay()); 
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    params.push(weekStart, weekEnd);
+
+                    break;
+
+                case 'month':
+                    dateFilter = `WHERE EXTRACT(YEAR FROM b.created_at) = $1 AND EXTRACT(MONTH FROM b.created_at) = $2`;
+                    params.push(date.getFullYear(), date.getMonth() + 1); // +1 тк месяцы 0-11
+
+                    break;
+            }
+        }
+
+        // подсчет количества бронирований, сортровка по убыванию бронирований
+        const query = `
+            SELECT
+            user_id,
+            COUNT(*) as booking_count,
+            RANK() OVER (ORDER BY COUNT(*) DESC) as place
+            FROM bookings b
+            ${dateFilter}
+            GROUP BY user_id
+            ORDER BY booking_count DESC, user_id ASC
+            LIMIT 10`;
+
+        const result = await pool.query(query, params);
+
+        // преобразование результата с правильными типами
+        const rankings: UserRanking[] = result.rows.map(row => ({
+            user_id: row.user_id,
+            place: parseInt(row.place, 10),
+            booking_count: parseInt(row.booking_count, 10)
+        }));
+
+        return rankings;
+
+    } catch (error) {
+        console.error('Error getting rankings:', error);
+        throw new Error('Failed to retrieve user rankings');
+    }
+}}
 
 export const bookingService = new BookingService();

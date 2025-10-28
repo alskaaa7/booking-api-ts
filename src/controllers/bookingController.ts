@@ -107,6 +107,35 @@ export class BookingController {
       message: 'Booking cancelled successfully'
     });
   });
+
+  getUserRankings = asyncHandler(async (req: Request, res: Response) => {
+    const { period, date } = req.query;
+    
+    console.log('Получен запрос на рейтинги:', { period, date });
+    
+    // параметры для фильтрации
+    let rankingPeriod;
+    if (period && (period === 'day' || period === 'week' || period === 'month')) {
+      rankingPeriod = {
+        type: period as 'day' | 'week' | 'month',
+        date: date ? new Date(date as string) : new Date()
+      };
+    }
+
+    // сервис для получения рейтингов
+    const rankings = await bookingService.getUserRankings(rankingPeriod);
+    
+    console.log('Рейтинги получены, количество записей:', rankings.length);
+    
+    // успешный ответ
+    res.status(200).json({ 
+      success: true, 
+      data: rankings,
+      period: rankingPeriod,
+      total: rankings.length
+    });
+  });
 }
+
 
 export const bookingController = new BookingController();
